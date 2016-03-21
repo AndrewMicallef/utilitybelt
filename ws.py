@@ -102,3 +102,39 @@ def sort_dict(dict, by):
     tmp = zip(*tmp)
 
     return {k: v for k, v in zip(dict.keys(), tmp)}
+
+    
+def concact_data(files, skip_continuous = True):
+    """
+    Takes a list of wavesurfer files and merges all 
+    data into a single dictionary of numpy arrays
+    """
+
+    data = {'trigger' : [], 'WSfilename': [],}
+    
+    for file in files:
+        name = file.split("/")[-1]
+        ws = wsfile(file)
+        
+
+        if ws.IsContinuous and skip_continuous:
+            continue
+
+        trial_data = ws.data()
+
+        for k in trial_data:
+            try:
+                data[k].append(trial_data[k])
+            except KeyError:
+                data[k] = [trial_data[k]]
+        
+        for t in ws.timestamp:
+            data['trigger'].append(t.time())
+            data['WSfilename'].append(name)
+        
+    for k in data:
+        if k in ("trigger", "WSfilename"):
+            continue
+        data[k] = np.array([t for i in data[k] for t in i])
+        
+    return data
