@@ -89,17 +89,21 @@ def sort_dict(dict, by):
 
     
 def concact_data(files, skip_continuous = True):
+
     """
     Takes a list of wavesurfer files and merges all 
     data into a single dictionary of numpy arrays
+    
+    UPDATE: can handle concactantion of files with 
+            different channel names
     """
 
     data = {'trigger' : [], 'WSfilename': [],}
-    
+
     for file in files:
         name = file.split("/")[-1]
         ws = wsfile(file)
-        
+
 
         if ws.IsContinuous and skip_continuous:
             continue
@@ -108,14 +112,23 @@ def concact_data(files, skip_continuous = True):
 
         for k in trial_data:
             try:
-                data[k].append(trial_data[k])
+                data[k].append(trial_data[k][0:])
             except KeyError:
-                data[k] = [trial_data[k]]
-        
+                data[k] = [trial_data[k][0:]]
+
+        shape = trial_data[k][0:].shape
+
+        #This is to compensate for files with different channel names
+        for k in data:
+            if k in ("trigger", "WSfilename"):
+                continue
+            if k not in trial_data.keys():
+                data[k].append(np.zeros(shape)*np.nan)
+
         for t in ws.timestamp:
             data['trigger'].append(t.time())
             data['WSfilename'].append(name)
-        
+
     for k in data:
         if k in ("trigger", "WSfilename"):
             continue
