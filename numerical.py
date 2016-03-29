@@ -67,7 +67,7 @@ def edges(trace, threshold, type = 'rising'):
     edge = {'rising':1, 'falling':-1}
     thresholded = (trace > threshold).astype(int)
     
-    if type not 'both':
+    if type is not 'both':
         return np.diff(thresholded == edge[type])
     else:
         return np.diff(thresholded)    
