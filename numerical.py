@@ -51,21 +51,6 @@ def get_spikes (array, threshold, smooth_radius = 500, digitise = 75):
     thresholded = (downsampled > threshold).astype(int)
     return np.diff(thresholded) == 1
 
-def edges(trace, threshold, type = 'rising'):
-    """
-    returns a boolean array that is true at the thresholded edges.
-    By default returns the rising edge, can take falling edge as well
-    """
-    
-    edge = {'rising':1, 'falling':-1}
-    thresholded = (trace > threshold).astype(int)
-    
-    if type not 'both':
-        return np.diff(thresholded == edge[type])
-    else:
-        return np.diff(thresholded)
-
-
 def num(s):
     try:
         return int(s)
