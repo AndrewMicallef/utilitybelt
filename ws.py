@@ -14,47 +14,22 @@ class wsfile:
 
         self.f = f
         
-        isActive = f['header/Acquisition/IsChannelActive'].value.astype(bool)
-        self.isActive = isActive.reshape(-1)
+        if not any([label == 'versionstring' for label in self.f['header']]):
+            #This is likeley the version 0.801 ws file!
+            #Double check this against the new specification
+            
+        
+            isActive = f['header/Acquisition/IsChannelActive'].value.astype(bool)
+            self.isActive = isActive.reshape(-1)
 
-        self.unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
-        self.nameslist = f['header/Acquisition/AnalogChannelNames'].value[self.isActive]
-        self.IsContinuous = bool(f['header/IsContinuous'].value.item())
-        self.IsTrialBased = bool(f['header/IsTrialBased'].value.item())
-        self.TrialDuration = f['header/TrialDuration'].value.item()
-        self.SampleRate = f['header/Acquisition/SampleRate'].value.item()
-        
-        """
-        Aqcuisition variables:
-        
-        AbsoluteProtocolFileName
-        AbsoluteUserSettingsFileName
-        Acquisition
-        ClockAtExperimentStart
-        Display
-        Ephys
-        ExperimentCompletedTrialCount
-        ExperimentTrialCount
-        FastProtocols
-        HasUserSpecifiedProtocolFileName
-        HasUserSpecifiedUserSettingsFileName
-        IndexOfSelectedFastProtocol
-        IsContinuous
-        IsReady
-        IsTrialBased
-        IsYokedToScanImage
-        Logging
-        NFastProtocols
-        NTimesSamplesAcquiredCalledSinceExperimentStart
-        State
-        Stimulation
-        TrialDuration
-        Triggering
-        UserFunctions
-        """
-        
-        
-        dstamp = f['header/ClockAtExperimentStart'].value
+            self.unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
+            self.nameslist = f['header/Acquisition/AnalogChannelNames'].value[self.isActive]
+            self.IsContinuous = bool(f['header/IsContinuous'].value.item())
+            self.IsTrialBased = bool(f['header/IsTrialBased'].value.item())
+            self.TrialDuration = f['header/TrialDuration'].value.item()
+            self.SampleRate = f['header/Acquisition/SampleRate'].value.item()
+
+            dstamp = f['header/ClockAtExperimentStart'].value
         self.dstamp = datetime.datetime(*dstamp)      
         
         trace_times = []
@@ -67,7 +42,10 @@ class wsfile:
         
         self.timestamp = np.array(trace_times)
     
-    def data(self):
+    
+        self.data = self._get_data_()
+        
+    def _get_data_(self):
         """
         
         returns the h5 data as a dictionary of numpy arrays.
@@ -95,6 +73,10 @@ class wsfile:
         
         
 def sort_dict(dict, by):
+    """
+    sorts the dictionary entries by the entry given
+    """
+    
     by_index = dict.keys().index(by)
     
     tmp = zip(*[(dict[k]) for k in dict])
