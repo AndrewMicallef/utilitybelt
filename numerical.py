@@ -56,3 +56,18 @@ def num(s):
         return int(s)
     except ValueError:
         return float(s)
+    
+    
+def edges(trace, threshold, type = 'rising'):
+    """
+    returns a boolean array that is true at the thresholded edges.
+    By default returns the rising edge, can take falling edge as well
+    """
+    
+    edge = {'rising':1, 'falling':-1}
+    thresholded = (trace > threshold).astype(int)
+    
+    if type not 'both':
+        return np.diff(thresholded == edge[type])
+    else:
+        return np.diff(thresholded)    
