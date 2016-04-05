@@ -37,8 +37,11 @@ class wsfile:
         isActive = f['header/Acquisition/IsChannelActive'].value.astype(bool)
         self.isActive = isActive.reshape(-1)
 
-        self.unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
+        
         self.nameslist = f['header/Acquisition/AnalogChannelNames'].value[self.isActive]
+        
+        unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
+        self.unitslist = {name:units for name, units in zip(self.nameslist, unitslist)}
         self.IsContinuous = bool(f[IsContinuous].value.item())
         self.IsTrialBased = bool(f[IsTrialBased].value.item())
         self.TrialDuration = f[TrialDuration].value.item()
