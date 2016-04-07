@@ -1,4 +1,5 @@
 import numpy as np
+import math
 
 def get_events_ind(trace, threshold, base):
     """
@@ -50,8 +51,8 @@ def get_trial_start_from_stim(stimarr, threshold, bin, dt):
     # 2. downsample the rsing edges
     # 3. capture the indicies of blocks oabove threshold    
 
-    stim = nl.edges(stimarr, 0.5)[0]
-    dd_stim = nl.downsample(stim, bin, np.mean)  
+    stim = edges(stimarr, 0.5)[0]
+    dd_stim = downsample(stim, bin, np.mean)  
     stim_ind = get_events_ind(dd_stim, threshold, 0.01)
     '''
     This code takes a high frequency series of spikes
@@ -135,3 +136,25 @@ def partition_data(data, trials, t_offset = (-1,5), dt = 20000):
 
     return trial_data
 
+def edges(trace, threshold, type = 'rising'):
+    """
+    returns a boolean array that is true at the thresholded edges.
+    By default returns the rising edge, can take falling edge as well
+    """
+    
+    edge = {'rising':1, 'falling':-1}
+    thresholded = (trace > threshold).astype(int)
+    
+    if type is not 'both':
+        return np.diff(thresholded == edge[type])
+    else:
+        return np.diff(thresholded)
+        
+def downsample (a, R, method = np.nanmean):
+        """
+        bins input array 'a' into chunks of 'R' samples
+        """
+        pad_size = math.ceil(float(a.size)/R)*R - a.size
+        b_padded = np.append(a, np.zeros(pad_size)*np.NaN)
+
+        return method(b_padded.reshape(-1,R), axis=1)
