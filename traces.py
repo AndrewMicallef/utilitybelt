@@ -51,7 +51,7 @@ def get_trial_start_from_stim(stimarr, threshold, bin, dt):
     # 2. downsample the rsing edges
     # 3. capture the indicies of blocks oabove threshold    
 
-    stim = edges(stimarr, 0.5)[0]
+    stim = edges(stimarr, 0.5).reshape(-1)
     dd_stim = downsample(stim, bin, np.mean)  
     stim_ind = get_events_ind(dd_stim, threshold, 0.01)
     '''
