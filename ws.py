@@ -73,7 +73,7 @@ class wsfile:
         
         for group in self.f:
             if group != u'header':
-                for n in xrange(len(self.nameslist)):
+                for n in range(len(self.nameslist)):
                     trace = self.f['%s/analogScans' %group].value[n].astype('float')
                     trace = (np.array(trace) * (20.0 / 2**16))
             
