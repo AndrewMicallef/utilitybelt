@@ -27,7 +27,7 @@ def get_events_ind(trace, threshold, base):
 
     return np.array(events)
 
-def get_trial_start_from_stim(stimarr, threshold, bin, dt):
+def get_trial_start_from_stim(stimarr, threshold, bin, dt, method = np.mean, stimdur = 0.5):
     
     """
     Returns a 1d array corresponding to the indicies of
@@ -41,6 +41,11 @@ def get_trial_start_from_stim(stimarr, threshold, bin, dt):
     bin       -- bin width for downsampling. 500 works well for Speaker
                  Much higher is necessary for the Somatosensory stimulus
     dt        -- The sampling frequency             
+    
+    Keyword Arguments
+    method    -- the function to use for digitising the stimulus array.
+                 np.mean works well for auditory stimulus. sp.max works
+                 well for somatosensory stimulus.
                  
     Assumes two sequential stimuli that have a duration
     of 500 ms and are spaced no more than 250 ms apart
@@ -52,7 +57,7 @@ def get_trial_start_from_stim(stimarr, threshold, bin, dt):
     # 3. capture the indicies of blocks oabove threshold    
 
     stim = edges(stimarr, 0.5).reshape(-1)
-    dd_stim = downsample(stim, bin, np.mean)  
+    dd_stim = downsample(stim, bin, method)  
     stim_ind = get_events_ind(dd_stim, threshold, 0.01)
     '''
     This code takes a high frequency series of spikes
@@ -67,10 +72,11 @@ def get_trial_start_from_stim(stimarr, threshold, bin, dt):
     
         # time between start and end of this pulse
         delta_t = (t1 - t0) #in samples!
-        
-        # comparison to number of samples I would expect 
-        # in a 500 ms block of stimulus.
-        if (delta_t > 0.4/bin*dt) and (delta_t < 0.6/bin*dt):
+        delta_t = delta_t *bin /dt
+        # Make sure that the block no more than 100 ms
+        # different from the stimulus duration. add 2 bin on dt to error,
+        # because the downsampling will extend the duration of the stimulus
+        if abs(delta_t - stimdur) < (0.1 + 2*bin/dt) :
             trials.append(t0)
     
     trials = np.array(trials) * bin
