@@ -31,6 +31,29 @@ TODO = '''
 
 '''
 
+#STYLING -------------------------------------------------
+# wining, living it up in the city,
+
+left_line = {
+    'line_color' : 'red',
+    'line_dash' : [4,2],
+    'line_width' : 3.5,
+    }
+
+right_line = {
+    'line_color' : 'blue',
+    'line_dash' : [4,2],
+    'line_width' : 3.5,
+    }
+    
+total_line = {
+    'line_color' : 'purple',
+    #'line_dash' : [4,2],
+    'line_width' : 5,
+    }
+
+# --------------------------------------------------------
+
 
 df = pd.DataFrame([])
 df_summary = pd.DataFrame([])
@@ -136,7 +159,7 @@ def update():
 
 
     trials = np.arange(df.shape[0])
-    trials = downsample(trials, 10, np.nanmax)
+    trials_dig = downsample(trials, 10, np.nanmax)
 
     trials_L = downsample(reward_L, 10, np.nansum)
     trials_R = downsample(reward_R, 10, np.nansum)
@@ -161,36 +184,36 @@ def update():
                                     'y' : total_responses
                                     }
     
-    p2_frac.data_source.data = {'x' : trials,
+    p2_frac.data_source.data = {'x' : trials_dig,
                                 'y' : frac}
     
-    p2_frac_L.data_source.data = {'x' : trials,
+    p2_frac_L.data_source.data = {'x' : trials_dig,
                                  'y' : frac_L
                                  }
     
-    p2_frac_R.data_source.data = {'x': trials,
+    p2_frac_R.data_source.data = {'x': trials_dig,
                                   'y': frac_R
                                  }
     
     
-    p3_cor.data_source.data = { 'x': trials,
+    p3_cor.data_source.data = { 'x': trials_dig,
                                 'y': p_correct
                               }
     
-    p3_cor_L.data_source.data = {'x' : trials,
+    p3_cor_L.data_source.data = {'x' : trials_dig,
                                  'y' : p_correct_L
                                 }
     
-    p3_cor_R.data_source.data =  {'x' :trials,
+    p3_cor_R.data_source.data =  {'x' :trials_dig,
                                'y' :p_correct_R
                                }
     
     
-    p4_delta.data_source.data = {'x': trials,
+    p4_delta.data_source.data = {'x': trials_dig,
                                  'y' : delta
                                  }
 
-    p4_deltam.data_source.data = {'x' :trials,
+    p4_deltam.data_source.data = {'x' :trials_dig,
                                   'y' :delta
                                   }
     
@@ -281,43 +304,54 @@ total_responses = downsample(total_responses, 10, np.nansum)/10
 
 
 trials = np.arange(df.shape[0])
-trials = downsample(trials, 10, np.nanmax)
+trials_dig = downsample(trials, 10, np.nanmax)
 
-trials_L = downsample(reward_L, 10, np.nansum)
-trials_R = downsample(reward_R, 10, np.nansum)
+trials_dig_L = downsample(reward_L, 10, np.nansum)
+trials_dig_R = downsample(reward_R, 10, np.nansum)
 
 N_rewards = downsample(reward, 10, np.nansum)
 N_rewards_L = downsample(reward & reward_L, 10, np.nansum)
 N_rewards_R = downsample(reward & reward_R, 10, np.nansum)
 
 frac = N_rewards / 10
-frac_L = N_rewards_L / trials_L
-frac_R = N_rewards_R / trials_R
+frac_L = N_rewards_L / trials_dig_L
+frac_R = N_rewards_R / trials_dig_R
 
 p_correct = downsample(correct, 10, np.nansum) / 10
-p_correct_L = downsample(correct & response_L, 10, np.nansum) / trials_L
-p_correct_R = downsample(correct & response_R, 10, np.nansum) / trials_R
+p_correct_L = downsample(correct & response_L, 10, np.nansum) / trials_dig_L
+p_correct_R = downsample(correct & response_R, 10, np.nansum) / trials_dig_R
 
 delta = (( downsample(response_R, 10, np.nansum) 
          - downsample(response_L, 10, np.nansum)) / 10)
 
+    
+p1_resp = {
+        'line' : p1.line(total_trials_dig, total_responses, 
+                            line_color = 'red', 
+                            line_dash = [4,4]
+                        ),
+        }    
 
-
-p1_responses = p1.line(total_trials, total_responses, 
-                    line_color = 'red', 
-                    line_dash = [4,4])
-            
-p2_frac = p2.line(trials, frac, line_color = 'black', line_width = 5)
-
-p2_frac_L = p2.line(trials, frac_L, line_color = 'red', line_dash = [4,1,2,1])
-p2_frac_R = p2.line(trials, frac_R, line_color = 'blue', line_dash = [4,1,2,1])
-
-p3_cor = p3.line(trials, p_correct, line_color = 'black', line_width = 5)
-p3_cor_L = p3.line(trials, p_correct_L, line_color = 'red', line_dash = [4,1,2,1])
-p3_cor_R = p3.line(trials, p_correct_R, line_color = 'blue', line_dash = [4,1,2,1])
-
-p4_deltam = p4.circle(trials, delta, size = 4)
-p4_delta = p4.line(trials, delta)
+p2_frac = {
+        'tot' : p2.line(trials_dig, frac, **total_line,),
+        'L' : p2.line(trials_dig, frac_L, **left_line,),
+        'R' : p2.line(trials_dig, frac_R, **right_line, ),
+                        
+        'Lmean' : p2.line(trials, moving_average((reward & reward_L), 10)/10,
+                            **left_line
+                            )
+    }            
+    
+p3_cor = { 
+        'tot': p3.line(trials_dig, p_correct, **total_line),
+        'L' : p3.line(trials_dig, p_correct_L, **left_line,),
+        'R' : p3.line(trials_dig, p_correct_R, **right_line,),
+    }
+    
+p4_delta = {
+        'marker' : p4.circle(trials_dig, delta, size = 4),
+        'line' : p4.line(trials_dig, delta),
+    }
 
 p4.text(1, 0.5, text = ['Right'], text_color = 'blue')
 p4.text(1, -0.5, text = ['Left'], text_color = 'Red')
