@@ -307,6 +307,7 @@ if first_loop:
                         line_dash = [4,4])
                 
     p2_frac = p2.line(trials, frac, line_color = 'black', line_width = 5)
+    
     p2_frac_L = p2.line(trials, frac_L, line_color = 'red', line_dash = [4,1,2,1])
     p2_frac_R = p2.line(trials, frac_R, line_color = 'blue', line_dash = [4,1,2,1])
 
