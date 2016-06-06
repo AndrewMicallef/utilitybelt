@@ -17,10 +17,20 @@ from bokeh.plotting import figure, curdoc, show
 from bokeh.models import Span
 from bokeh.charts import Bar
 
-output_notebook()
 usage = '''bokeh serve
            plot_stats.py ID DATAPATH
 '''
+
+
+TODO = '''
+1. Use a rolling average for fractions correct and rewarded
+    display a noticable marker at the 10th point
+
+2. fix the line weights
+3.
+
+'''
+
 
 df = pd.DataFrame([])
 df_summary = pd.DataFrame([])
