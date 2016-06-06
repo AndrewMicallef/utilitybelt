@@ -58,8 +58,8 @@ def read_data(df = pd.DataFrame([])):
                                    names = df.columns, 
                                    skiprows = last_line))
         
-        if df['Unnamed: 0'].values[-1] == last_line:
-            return df
+        if df['Unnamed: 0'].values[-1] < last_line + 10:
+            return df, False
 
     if 'time' in df.columns:
         df = df.drop_duplicates(subset  = 'time')
@@ -71,7 +71,7 @@ def read_data(df = pd.DataFrame([])):
     df.index = df.trial_num
     df['reward'] = df['WaterPort[0]'] + df['WaterPort[1]']
     
-    return df
+    return df, True
 
 def update():
     global df
@@ -91,7 +91,11 @@ def update():
         time.sleep(10)
         return
     
-    df = read_data(df)
+    df, changed = read_data(df)
+    
+    if not changed:
+        time.sleep(40)
+        return
     
     df_raw = df.copy()
 
