@@ -96,6 +96,12 @@ def update():
     if not changed:
         time.sleep(40)
         return
+        
+    # if the size of the frame is not divisible
+    # by 10 ignore the excess.
+    excess = df.shape[0] % 10
+    df = df[:-excess]
+    
     
     df_raw = df.copy()
 
@@ -294,28 +300,28 @@ if first_loop:
     delta = (( downsample(response_R, 10, np.nansum) 
              - downsample(response_L, 10, np.nansum)) / 10)
 
-    if first_loop:
     
-        p1_responses = p1.line(total_trials, total_responses, 
-                            line_color = 'red', 
-                            line_dash = [4,4])
-                    
-        p2_frac = p2.line(trials, frac, line_color = 'black', line_width = 5)
-        p2_frac_L = p2.line(trials, frac_L, line_color = 'red', line_dash = [4,1,2,1])
-        p2_frac_R = p2.line(trials, frac_R, line_color = 'blue', line_dash = [4,1,2,1])
+    
+    p1_responses = p1.line(total_trials, total_responses, 
+                        line_color = 'red', 
+                        line_dash = [4,4])
+                
+    p2_frac = p2.line(trials, frac, line_color = 'black', line_width = 5)
+    p2_frac_L = p2.line(trials, frac_L, line_color = 'red', line_dash = [4,1,2,1])
+    p2_frac_R = p2.line(trials, frac_R, line_color = 'blue', line_dash = [4,1,2,1])
 
-        p3_cor = p3.line(trials, p_correct, line_color = 'black', line_width = 5)
-        p3_cor_L = p3.line(trials, p_correct_L, line_color = 'red', line_dash = [4,1,2,1])
-        p3_cor_R = p3.line(trials, p_correct_R, line_color = 'blue', line_dash = [4,1,2,1])
+    p3_cor = p3.line(trials, p_correct, line_color = 'black', line_width = 5)
+    p3_cor_L = p3.line(trials, p_correct_L, line_color = 'red', line_dash = [4,1,2,1])
+    p3_cor_R = p3.line(trials, p_correct_R, line_color = 'blue', line_dash = [4,1,2,1])
 
-        p4_deltam = p4.circle(trials, delta, size = 4)
-        p4_delta = p4.line(trials, delta)
+    p4_deltam = p4.circle(trials, delta, size = 4)
+    p4_delta = p4.line(trials, delta)
 
-        p4.text(1, 0.5, text = ['Right'], text_color = 'blue')
-        p4.text(1, -0.5, text = ['Left'], text_color = 'Red')
-     
-        print "I drew the things"
-        first_loop = False
+    p4.text(1, 0.5, text = ['Right'], text_color = 'blue')
+    p4.text(1, -0.5, text = ['Left'], text_color = 'Red')
+ 
+    print "I drew the things"
+    
 
 #-----------------------------------------------------------------#
 
