@@ -103,8 +103,6 @@ def update():
     global last_mod
     global first_loop
     
-    
-    
     mod_time = time.ctime(os.path.getmtime(infile))
     
     if  (mod_time > last_mod) or first_loop:
@@ -159,7 +157,7 @@ def update():
 
 
     trials = np.arange(df.shape[0])
-    trials_dig = downsample(trials, 10, np.nanmax)
+    trials[::10] = downsample(trials, 10, np.nanmax)
 
     trials_L = downsample(reward_L, 10, np.nansum)
     trials_R = downsample(reward_R, 10, np.nansum)
@@ -184,36 +182,36 @@ def update():
                                     'y' : total_responses
                                     }
     
-    p2_frac.data_source.data = {'x' : trials_dig,
+    p2_frac.data_source.data = {'x' : trials[::10],
                                 'y' : frac}
     
-    p2_frac_L.data_source.data = {'x' : trials_dig,
+    p2_frac_L.data_source.data = {'x' : trials[::10],
                                  'y' : frac_L
                                  }
     
-    p2_frac_R.data_source.data = {'x': trials_dig,
+    p2_frac_R.data_source.data = {'x': trials[::10],
                                   'y': frac_R
                                  }
     
     
-    p3_cor.data_source.data = { 'x': trials_dig,
+    p3_cor.data_source.data = { 'x': trials[::10],
                                 'y': p_correct
                               }
     
-    p3_cor_L.data_source.data = {'x' : trials_dig,
+    p3_cor_L.data_source.data = {'x' : trials[::10],
                                  'y' : p_correct_L
                                 }
     
-    p3_cor_R.data_source.data =  {'x' :trials_dig,
+    p3_cor_R.data_source.data =  {'x' :trials[::10],
                                'y' :p_correct_R
                                }
     
     
-    p4_delta.data_source.data = {'x': trials_dig,
+    p4_delta.data_source.data = {'x': trials[::10],
                                  'y' : delta
                                  }
 
-    p4_deltam.data_source.data = {'x' :trials_dig,
+    p4_deltam.data_source.data = {'x' :trials[::10],
                                   'y' :delta
                                   }
     
@@ -304,38 +302,38 @@ total_responses = downsample(total_responses, 10, np.nansum)/10
 
 
 trials = np.arange(df.shape[0])
-trials_dig = downsample(trials, 10, np.nanmax)
+trials[::10] = downsample(trials, 10, np.nanmax)
 
-trials_dig_L = downsample(reward_L, 10, np.nansum)
-trials_dig_R = downsample(reward_R, 10, np.nansum)
+trials[::10]_L = downsample(reward_L, 10, np.nansum)
+trials[::10]_R = downsample(reward_R, 10, np.nansum)
 
 N_rewards = downsample(reward, 10, np.nansum)
 N_rewards_L = downsample(reward & reward_L, 10, np.nansum)
 N_rewards_R = downsample(reward & reward_R, 10, np.nansum)
 
 frac = N_rewards / 10
-frac_L = N_rewards_L / trials_dig_L
-frac_R = N_rewards_R / trials_dig_R
+frac_L = N_rewards_L / trials[::10]_L
+frac_R = N_rewards_R / trials[::10]_R
 
 p_correct = downsample(correct, 10, np.nansum) / 10
-p_correct_L = downsample(correct & response_L, 10, np.nansum) / trials_dig_L
-p_correct_R = downsample(correct & response_R, 10, np.nansum) / trials_dig_R
+p_correct_L = downsample(correct & response_L, 10, np.nansum) / trials[::10]_L
+p_correct_R = downsample(correct & response_R, 10, np.nansum) / trials[::10]_R
 
 delta = (( downsample(response_R, 10, np.nansum) 
          - downsample(response_L, 10, np.nansum)) / 10)
 
     
 p1_resp = {
-        'line' : p1.line(total_trials_dig, total_responses, 
+        'line' : p1.line(total_trials[::10], total_responses, 
                             line_color = 'red', 
                             line_dash = [4,4]
                         ),
         }    
 
 p2_frac = {
-        'tot' : p2.line(trials_dig, frac, **total_line,),
-        'L' : p2.line(trials_dig, frac_L, **left_line,),
-        'R' : p2.line(trials_dig, frac_R, **right_line, ),
+        'tot' : p2.line(trials[::10], frac, **total_line,),
+        'L' : p2.line(trials[::10], frac_L, **left_line,),
+        'R' : p2.line(trials[::10], frac_R, **right_line, ),
                         
         'Lmean' : p2.line(trials, moving_average((reward & reward_L), 10)/10,
                             **left_line
@@ -343,14 +341,14 @@ p2_frac = {
     }            
     
 p3_cor = { 
-        'tot': p3.line(trials_dig, p_correct, **total_line),
-        'L' : p3.line(trials_dig, p_correct_L, **left_line,),
-        'R' : p3.line(trials_dig, p_correct_R, **right_line,),
+        'tot': p3.line(trials[::10], p_correct, **total_line),
+        'L' : p3.line(trials[::10], p_correct_L, **left_line,),
+        'R' : p3.line(trials[::10], p_correct_R, **right_line,),
     }
     
 p4_delta = {
-        'marker' : p4.circle(trials_dig, delta, size = 4),
-        'line' : p4.line(trials_dig, delta),
+        'marker' : p4.circle(trials[::10], delta, size = 4),
+        'line' : p4.line(trials[::10], delta),
     }
 
 p4.text(1, 0.5, text = ['Right'], text_color = 'blue')
