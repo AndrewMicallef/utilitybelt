@@ -8,7 +8,7 @@ import time
 import sys
 
 #sys.path.append('D:/GoogleDrive/02 PROTOCOLS/Python')
-from numerical import downsample
+from numerical import downsample as digitise
 
 from bokeh.io import hplot, output_notebook, gridplot
 from bokeh.client import push_session
@@ -153,29 +153,29 @@ def update():
 
     total_trials = np.arange(0,total_trials.shape[0], 10) 
 
-    total_responses = downsample(total_responses, 10, np.nansum)/10
+    total_responses = digitise(total_responses, 10, np.nansum)/10
 
 
     trials = np.arange(df.shape[0])
-    trials[::10] = downsample(trials, 10, np.nanmax)
+    trials[::10] = digitise(trials, 10, np.nanmax)
 
-    trials_L = downsample(reward_L, 10, np.nansum)
-    trials_R = downsample(reward_R, 10, np.nansum)
+    trials_L = digitise(reward_L, 10, np.nansum)
+    trials_R = digitise(reward_R, 10, np.nansum)
 
-    N_rewards = downsample(reward, 10, np.nansum)
-    N_rewards_L = downsample(reward & reward_L, 10, np.nansum)
-    N_rewards_R = downsample(reward & reward_R, 10, np.nansum)
+    N_rewards = digitise(reward, 10, np.nansum)
+    N_rewards_L = digitise(reward & reward_L, 10, np.nansum)
+    N_rewards_R = digitise(reward & reward_R, 10, np.nansum)
 
     frac = N_rewards / 10
     frac_L = N_rewards_L / trials_L
     frac_R = N_rewards_R / trials_R
 
-    p_correct = downsample(correct, 10, np.nansum) / 10
-    p_correct_L = downsample(correct & response_L, 10, np.nansum) / trials_L
-    p_correct_R = downsample(correct & response_R, 10, np.nansum) / trials_R
+    p_correct = digitise(correct, 10, np.nansum) / 10
+    p_correct_L = digitise(correct & response_L, 10, np.nansum) / trials_L
+    p_correct_R = digitise(correct & response_R, 10, np.nansum) / trials_R
 
-    delta = (( downsample(response_R, 10, np.nansum) 
-             - downsample(response_L, 10, np.nansum)) / 10)
+    delta = (( digitise(response_R, 10, np.nansum) 
+             - digitise(response_L, 10, np.nansum)) / 10)
 
 
     p1_responses.data_source.data = {'x' : total_trials,
@@ -296,31 +296,33 @@ wrong = (df.rewardCond != df.response).values
 total_trials = np.arange(df_raw.shape[0])
 total_responses = (df_raw.response == '-').values
 
-total_trials = np.arange(0,total_trials.shape[0], 10) 
-
-total_responses = downsample(total_responses, 10, np.nansum)/10
+total_trials = np.arange(0, total_trials.shape[0], 10) 
+total_responses = digitise(total_responses, 10, np.nansum)/10
 
 
 trials = np.arange(df.shape[0])
-trials[::10] = downsample(trials, 10, np.nanmax)
+trials[::10] = digitise(trials, 10, np.nanmax)
 
-trials[::10]_L = downsample(reward_L, 10, np.nansum)
-trials[::10]_R = downsample(reward_R, 10, np.nansum)
+trials[::10]_L = digitise(reward_L, 10, np.nansum)
+trials[::10]_R = digitise(reward_R, 10, np.nansum)
 
-N_rewards = downsample(reward, 10, np.nansum)
-N_rewards_L = downsample(reward & reward_L, 10, np.nansum)
-N_rewards_R = downsample(reward & reward_R, 10, np.nansum)
+N_rewards = digitise(reward, 10, np.nansum)
+N_rewards_L = digitise(reward & reward_L, 10, np.nansum)
+N_rewards_R = digitise(reward & reward_R, 10, np.nansum)
 
-frac = N_rewards / 10
-frac_L = N_rewards_L / trials[::10]_L
-frac_R = N_rewards_R / trials[::10]_R
 
-p_correct = downsample(correct, 10, np.nansum) / 10
-p_correct_L = downsample(correct & response_L, 10, np.nansum) / trials[::10]_L
-p_correct_R = downsample(correct & response_R, 10, np.nansum) / trials[::10]_R
 
-delta = (( downsample(response_R, 10, np.nansum) 
-         - downsample(response_L, 10, np.nansum)) / 10)
+frac = pd.rolling_mean((reward & reward_L), 10)/10
+
+frac_L = N_rewards_L / trials_L
+frac_R = N_rewards_R / trials_R
+
+p_correct = digitise(correct, 10, np.nansum) / 10
+p_correct_L = digitise(correct & response_L, 10, np.nansum) / trials[::10]_L
+p_correct_R = digitise(correct & response_R, 10, np.nansum) / trials[::10]_R
+
+delta = (( digitise(response_R, 10, np.nansum) 
+         - digitise(response_L, 10, np.nansum)) / 10)
 
     
 p1_resp = {
@@ -335,7 +337,7 @@ p2_frac = {
         'L' : p2.line(trials[::10], frac_L, **left_line,),
         'R' : p2.line(trials[::10], frac_R, **right_line, ),
                         
-        'Lmean' : p2.line(trials, moving_average((reward & reward_L), 10)/10,
+        'Lmean' : p2.line(trials, frac_L,
                             **left_line
                             )
     }            
