@@ -301,14 +301,13 @@ total_responses = digitise(total_responses, 10, np.nansum)/10
 
 
 trials = np.arange(df.shape[0])
-trials[::10] = digitise(trials, 10, np.nanmax)
 
-trials[::10]_L = digitise(reward_L, 10, np.nansum)
-trials[::10]_R = digitise(reward_R, 10, np.nansum)
+trials_L = pd.rolling_sum(reward_L, 10)
+trials_R = pd.rolling_sum(reward_R, 10)
 
-N_rewards = digitise(reward, 10, np.nansum)
-N_rewards_L = digitise(reward & reward_L, 10, np.nansum)
-N_rewards_R = digitise(reward & reward_R, 10, np.nansum)
+N_rewards = pd.rolling_sum(reward, 10)
+N_rewards_L = pd.rolling_sum(reward & reward_L, 10)
+N_rewards_R = pd.rolling_sum(reward & reward_R, 10)
 
 
 
