@@ -1,3 +1,5 @@
+#python3
+
 import h5py
 import datetime
 import numpy as np
@@ -14,16 +16,32 @@ class wsfile:
 
         self.f = f
         
+        try:
+            f['header/VersionString'].value.astype(float).item() == 0.915
+        
+                
+            IsContinuous = 'header/AreSweepsContinuous'
+            IsTrialBased = 'header/AreSweepsFiniteDuration'
+            TrialDuration = 'header/SweepDuration'
+            Clock = 'header/ClockAtRunStart'
+        
+        except:
+            IsContinuous = 'header/IsContinuous'
+            IsTrialBased = 'header/IsTrialBased'
+            TrialDuration = 'header/TrialDuration'
+            Clock = 'header/ClockAtExperimentStart'
+            
+        self.IsContinuous = bool(f[IsContinuous].value.item())
+        self.IsTrialBased = bool(f[IsTrialBased].value.item())
+        self.TrialDuration = f[TrialDuration].value.item()
+            
         isActive = f['header/Acquisition/IsChannelActive'].value.astype(bool)
         self.isActive = isActive.reshape(-1)
-
-        self.unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
-        self.nameslist = f['header/Acquisition/AnalogChannelNames'].value[self.isActive]
-        self.IsContinuous = bool(f['header/IsContinuous'].value.item())
-        self.IsTrialBased = bool(f['header/IsTrialBased'].value.item())
-        self.TrialDuration = f['header/TrialDuration'].value.item()
-        self.SampleRate = f['header/Acquisition/SampleRate'].value.item()
         
+        self.SampleRate = f['header/Acquisition/SampleRate'].value.item()
+        self.nameslist = f['header/Acquisition/AnalogChannelNames'].value[self.isActive]
+        self.unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
+
         """
         Aqcuisition variables:
         
@@ -54,7 +72,7 @@ class wsfile:
         """
         
         
-        dstamp = f['header/ClockAtExperimentStart'].value
+        dstamp = f[Clock].value
         self.dstamp = datetime.datetime(*dstamp)      
         
         trace_times = []
@@ -79,7 +97,7 @@ class wsfile:
         
         for group in self.f:
             if group != u'header':
-                for n in xrange(len(self.nameslist)):
+                for n in range(len(self.nameslist)):
                     trace = self.f['%s/analogScans' %group].value[n].astype('float')
                     trace = (np.array(trace) * (20.0 / 2**16))
             
@@ -93,6 +111,9 @@ class wsfile:
             analogDATA[k] =  np.array(analogDATA[k])
         return analogDATA
         
+    def close(self):
+        self.f.close()
+        
         
 def sort_dict(dict, by):
     by_index = dict.keys().index(by)
@@ -103,7 +124,6 @@ def sort_dict(dict, by):
 
     return {k: v for k, v in zip(dict.keys(), tmp)}
 
-    
 def concact_data(files, skip_continuous = True):
     """
     Takes a list of wavesurfer files and merges all 
@@ -121,6 +141,7 @@ def concact_data(files, skip_continuous = True):
             continue
 
         trial_data = ws.data()
+        ws.close()
 
         for k in trial_data:
             try:
