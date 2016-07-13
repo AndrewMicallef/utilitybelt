@@ -9,70 +9,46 @@ class wsfile:
     """
     This class holds the wsfile.
     to access the raw h5 use wsfile.f
+    
+    Updated to handle new file taxonomy sometim after v 0.8
     """
     
     def __init__(self, infile):
         f = h5py.File(infile, 'r')
 
         self.f = f
-        
-        try:
-            f['header/VersionString'].value.astype(float).item() == 0.915
-        
                 
-            IsContinuous = 'header/AreSweepsContinuous'
-            IsTrialBased = 'header/AreSweepsFiniteDuration'
-            TrialDuration = 'header/SweepDuration'
-            Clock = 'header/ClockAtRunStart'
-        
-        except:
+        if 'VersionString' not in self.f['header']:
+            #This is likeley the version 0.801 ws file!
+            #Double check this against the new specification
             IsContinuous = 'header/IsContinuous'
             IsTrialBased = 'header/IsTrialBased'
             TrialDuration = 'header/TrialDuration'
-            Clock = 'header/ClockAtExperimentStart'
-            
-        self.IsContinuous = bool(f[IsContinuous].value.item())
-        self.IsTrialBased = bool(f[IsTrialBased].value.item())
-        self.TrialDuration = f[TrialDuration].value.item()
-            
+            clock = 'header/ClockAtExperimentStart'
+        
+        else:
+            version  = float(self.f['header/VersionString'].value[0])
+        
+            if version >= 0.915:
+                IsContinuous = 'header/AreSweepsContinuous'
+                IsTrialBased = 'header/AreSweepsFiniteDuration'
+                TrialDuration = 'header/SweepDuration'
+                clock = 'header/ClockAtRunStart'
+
+
         isActive = f['header/Acquisition/IsChannelActive'].value.astype(bool)
         self.isActive = isActive.reshape(-1)
         
-        self.SampleRate = f['header/Acquisition/SampleRate'].value.item()
         self.nameslist = f['header/Acquisition/AnalogChannelNames'].value[self.isActive]
-        self.unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
-
-        """
-        Aqcuisition variables:
         
-        AbsoluteProtocolFileName
-        AbsoluteUserSettingsFileName
-        Acquisition
-        ClockAtExperimentStart
-        Display
-        Ephys
-        ExperimentCompletedTrialCount
-        ExperimentTrialCount
-        FastProtocols
-        HasUserSpecifiedProtocolFileName
-        HasUserSpecifiedUserSettingsFileName
-        IndexOfSelectedFastProtocol
-        IsContinuous
-        IsReady
-        IsTrialBased
-        IsYokedToScanImage
-        Logging
-        NFastProtocols
-        NTimesSamplesAcquiredCalledSinceExperimentStart
-        State
-        Stimulation
-        TrialDuration
-        Triggering
-        UserFunctions
-        """
+        unitslist = f['header/Acquisition/AnalogChannelUnits'].value[self.isActive]
+        self.unitslist = {name:units for name, units in zip(self.nameslist, unitslist)}
+        self.IsContinuous = bool(f[IsContinuous].value.item())
+        self.IsTrialBased = bool(f[IsTrialBased].value.item())
+        self.TrialDuration = f[TrialDuration].value.item()
+        self.SampleRate = f['header/Acquisition/SampleRate'].value.item()
         
-        
-        dstamp = f[Clock].value
+        dstamp = f[clock].value
         self.dstamp = datetime.datetime(*dstamp)      
         
         trace_times = []
@@ -85,6 +61,7 @@ class wsfile:
         
         self.timestamp = np.array(trace_times)
     
+        
     def data(self):
         """
         
@@ -109,13 +86,17 @@ class wsfile:
         
         for k in analogDATA:
             analogDATA[k] =  np.array(analogDATA[k])
+            
         return analogDATA
         
     def close(self):
         self.f.close()
-        
-        
+
 def sort_dict(dict, by):
+    """
+    sorts the dictionary entries by the entry given
+    """
+    
     by_index = dict.keys().index(by)
     
     tmp = zip(*[(dict[k]) for k in dict])
@@ -125,17 +106,21 @@ def sort_dict(dict, by):
     return {k: v for k, v in zip(dict.keys(), tmp)}
 
 def concact_data(files, skip_continuous = True):
+
     """
     Takes a list of wavesurfer files and merges all 
     data into a single dictionary of numpy arrays
+    
+    UPDATE: can handle concactantion of files with 
+            different channel names
     """
 
     data = {'trigger' : [], 'WSfilename': [],}
-    
+
     for file in files:
         name = file.split("/")[-1]
         ws = wsfile(file)
-        
+
 
         if ws.IsContinuous and skip_continuous:
             continue
@@ -145,14 +130,23 @@ def concact_data(files, skip_continuous = True):
 
         for k in trial_data:
             try:
-                data[k].append(trial_data[k])
+                data[k].append(trial_data[k][0:])
             except KeyError:
-                data[k] = [trial_data[k]]
-        
+                data[k] = [trial_data[k][0:]]
+
+        shape = trial_data[k][0:].shape
+
+        #This is to compensate for files with different channel names
+        for k in data:
+            if k in ("trigger", "WSfilename"):
+                continue
+            if k not in trial_data.keys():
+                data[k].append(np.zeros(shape)*np.nan)
+
         for t in ws.timestamp:
             data['trigger'].append(t.time())
             data['WSfilename'].append(name)
-        
+
     for k in data:
         if k in ("trigger", "WSfilename"):
             continue

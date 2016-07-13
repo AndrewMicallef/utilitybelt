@@ -2,20 +2,20 @@ import numpy as np
 import math
 
 
-def downsample2D(myarr, factor,estimator=np.mean):
+def downsample2D(myarr, factor, estimator=np.mean):
     """
     Downsample a 2D array by averaging over *factor* pixels 
-	in each axis. Crops upper edge if the shape is not a 
-	multiple of factor.
+    in each axis. Crops upper edge if the shape is not a 
+    multiple of factor.
 
     This code is pure numpy and should be fast.
 
     keywords:
         estimator - default to mean.  You can downsample by 
-		summing or something else if you want a different 
-		estimator
+        summing or something else if you want a different 
+        estimator
             (e.g., downsampling error: you want to sum & 
-			 divide by sqrt(n))
+         divide by sqrt(n))
     """
     ys,xs = myarr.shape
     crarr = myarr[:ys-(ys % int(factor)),:xs-(xs % int(factor))]
@@ -26,13 +26,13 @@ def downsample2D(myarr, factor,estimator=np.mean):
 
     
 def downsample (a, R, method = np.nanmean):
-	"""
-	bins input array 'a' into chunks of 'R' samples
-	"""
-	pad_size = math.ceil(float(a.size)/R)*R - a.size
-	b_padded = np.append(a, np.zeros(pad_size)*np.NaN)
+        """
+        bins input array 'a' into chunks of 'R' samples
+        """
+        pad_size = math.ceil(float(a.size)/R)*R - a.size
+        b_padded = np.append(a, np.zeros(pad_size)*np.NaN)
 
-	return method(b_padded.reshape(-1,R), axis=1)
+        return method(b_padded.reshape(-1,R), axis=1)
 
 
 def moving_average(a, n=3) :
@@ -56,3 +56,18 @@ def num(s):
         return int(s)
     except ValueError:
         return float(s)
+    
+    
+def edges(trace, threshold, type = 'rising'):
+    """
+    returns a boolean array that is true at the thresholded edges.
+    By default returns the rising edge, can take falling edge as well
+    """
+    
+    edge = {'rising':1, 'falling':-1}
+    thresholded = (trace > threshold).astype(int)
+    
+    if type is not 'both':
+        return np.diff(thresholded == edge[type])
+    else:
+        return np.diff(thresholded)    

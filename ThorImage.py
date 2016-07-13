@@ -37,8 +37,6 @@ class thorfile:
                 _dict[child.tag] = self._metadata_(child)
 
         return _dict
-
-    
     
     def __init__(self, path, lite = False):
         
