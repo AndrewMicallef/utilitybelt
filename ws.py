@@ -14,9 +14,8 @@ class wsfile:
     """
     
     def __init__(self, infile):
-        f = h5py.File(infile, 'r')
-
-        self.f = f
+    
+        self.file = h5py.File(infile, 'r')
                 
         if 'VersionString' not in self.f['header']:
             #This is likeley the version 0.801 ws file!
@@ -88,9 +87,61 @@ class wsfile:
             analogDATA[k] =  np.array(analogDATA[k])
             
         return analogDATA
-        
+    
+    def __enter__(self):
+        return self.file
+    
+    def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+        self.file.close()
+    
+    '''
+[Context Managers](http://docs.python-guide.org/en/latest/writing/structure/#context-managers)
+    -------
+
+    A context manager is a Python object that provides extra contextual 
+    information to an action. This extra information takes the form of 
+    running a callable upon initiating the context using the with statement, 
+    as well as running a callable upon completing all the code inside the 
+    with block. The most well known example of using a context manager is 
+    shown here, opening on a file:
+
+    ```{.python}
+    with open('file.txt') as f:
+        contents = f.read()
+    ```
+    Anyone familiar with this pattern knows that invoking open in this 
+    fashion ensures that f‘s close method will be called at some point. This 
+    reduces a developer’s cognitive load and makes the code easier to read.
+
+    There are two easy ways to implement this functionality yourself: using a 
+    class or using a generator. Let’s implement the above functionality 
+    ourselves, starting with the class approach:
+
+    ```{.python}
+    class CustomOpen(object):
+        def __init__(self, filename):
+          self.file = open(filename)
+
+        def __enter__(self):
+            return self.file
+
+        def __exit__(self, ctx_type, ctx_value, ctx_traceback):
+            self.file.close()
+
+    with CustomOpen('file') as f:
+        contents = f.read()
+    ```
+
+    This is just a regular Python object with two extra methods that are used 
+    by the with statement. CustomOpen is first instantiated and then its 
+    __enter__ method is called and whatever __enter__ returns is assigned to 
+    f in the as f part of the statement. When the contents of the with block 
+    is finished executing, the __exit__ method is then called.
+<!>
+    '''
+    
     def close(self):
-        self.f.close()
+        self.file.close()
 
 def sort_dict(dict, by):
     """
