@@ -61,7 +61,7 @@ class wsfile:
         
         self.timestamp = np.array(trace_times)
 
-    def data(self, timestamp = False):
+    def data(self, timestamp = False, decode_keys = False):
         """
         
         returns the h5 data as a dictionary of numpy arrays.
@@ -88,6 +88,9 @@ class wsfile:
         
         if timestamp:
             analogDATA['trig_times'] = self.timestamp
+
+        if decode_keys:
+            analogDATA = {k.decode():v for k,v in analogDATA.items()}
             
         return analogDATA
     
