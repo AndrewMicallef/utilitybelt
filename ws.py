@@ -60,8 +60,7 @@ class wsfile:
                 trace_times.append( (self.dstamp + delta) )
         
         self.timestamp = np.array(trace_times)
-    
-        
+
     def data(self):
         """
         
@@ -86,6 +85,8 @@ class wsfile:
         
         for k in analogDATA:
             analogDATA[k] =  np.array(analogDATA[k])
+        
+        analogDATA['trig_times'] = self.timestamp
             
         return analogDATA
     
