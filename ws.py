@@ -61,7 +61,7 @@ class wsfile:
         
         self.timestamp = np.array(trace_times)
 
-    def data(self):
+    def data(self, timestamp = False):
         """
         
         returns the h5 data as a dictionary of numpy arrays.
@@ -86,7 +86,8 @@ class wsfile:
         for k in analogDATA:
             analogDATA[k] =  np.array(analogDATA[k])
         
-        analogDATA['trig_times'] = self.timestamp
+        if timestamp:
+            analogDATA['trig_times'] = self.timestamp
             
         return analogDATA
     
