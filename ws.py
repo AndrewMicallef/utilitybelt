@@ -86,12 +86,12 @@ class wsfile:
         for k in analogDATA:
             analogDATA[k] =  np.array(analogDATA[k])
         
+        if decode_keys:
+            analogDATA = {k.decode():v for k,v in analogDATA.items()}
+
         if timestamp:
             analogDATA['trig_times'] = self.timestamp
 
-        if decode_keys:
-            analogDATA = {k.decode():v for k,v in analogDATA.items()}
-            
         return analogDATA
     
     def __enter__(self):
