@@ -3,6 +3,7 @@
 import h5py
 import datetime
 import numpy as np
+import warnings
 
 class wsfile:
 
@@ -61,12 +62,10 @@ class wsfile:
         
         self.timestamp = np.array(trace_times)
 
-    def data(self, timestamp = False, decode_keys = False):
+    def data(self, timestamp = False, decode_keys = False, subset = [], digitize = {}):
         """
-        
         returns the h5 data as a dictionary of numpy arrays.
         index by data[channel name] = np.array(trial x samples])
-        
         """
     
         analogDATA = {} #tmp list to hold the analog data
@@ -85,15 +84,25 @@ class wsfile:
         
         for k in analogDATA:
             analogDATA[k] =  np.array(analogDATA[k])
-        
-        if decode_keys:
-            analogDATA = {k.decode():v for k,v in analogDATA.items()}
 
+        if decode_keys:
+            # strings parsing changed in py3, decode_keys will make 
+            # life more like py2
+            analogDATA = {k.decode():v for k,v in analogDATA.items()}
+            
+        if subset:
+            if not decode_keys:
+                analogDATA = {k.decode():v for k,v in analogDATA.items()}
+                warnings.warn("Decoded Keys")
+            analogDATA = {k:v for k,v in analogDATA.items() if k in subset}
+            skipped_labels = [k for k in analogDATA.keys() if k not in subset]
+            warnings.warn("Skipped Channels: " + %(', ').join(skipped_labels))
+        
         if timestamp:
             analogDATA['trig_times'] = self.timestamp
 
         return analogDATA
-    
+
     def __enter__(self):
         return self.file
     
