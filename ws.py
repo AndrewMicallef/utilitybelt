@@ -85,19 +85,20 @@ class wsfile:
         for k in analogDATA:
             analogDATA[k] =  np.array(analogDATA[k])
 
-        if decode_keys:
+        if decode_keys or subset or digitize:
             # strings parsing changed in py3, decode_keys will make 
             # life more like py2
             analogDATA = {k.decode():v for k,v in analogDATA.items()}
             
         if subset:
-            if not decode_keys:
-                analogDATA = {k.decode():v for k,v in analogDATA.items()}
-                warnings.warn("Decoded Keys")
             analogDATA = {k:v for k,v in analogDATA.items() if k in subset}
             skipped_labels = [k for k in analogDATA.keys() if k not in subset]
             warnings.warn("Skipped Channels: " + %(', ').join(skipped_labels))
         
+        if digitize:
+            analogDATA = {k:(analogDATA > v).astype(bool) for k,v in digitize.items() 
+                                    if k in analogDATA}
+
         if timestamp:
             analogDATA['trig_times'] = self.timestamp
 
