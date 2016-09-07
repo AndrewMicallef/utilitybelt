@@ -93,10 +93,10 @@ class wsfile:
         if subset:
             analogDATA = {k:v for k,v in analogDATA.items() if k in subset}
             skipped_labels = [k for k in analogDATA.keys() if k not in subset]
-            warnings.warn("Skipped Channels: " + %(', ').join(skipped_labels))
+            warnings.warn("Skipped Channels: " + (', ').join(skipped_labels))
         
         if digitize:
-            analogDATA = {k:(analogDATA > v).astype(bool) for k,v in digitize.items() 
+            analogDATA = {k:(analogDATA[k] > v).astype(bool) for k,v in digitize.items() 
                                     if k in analogDATA}
 
         if timestamp:
@@ -105,7 +105,7 @@ class wsfile:
         return analogDATA
 
     def __enter__(self):
-        return self.file
+        return self
     
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
         self.file.close()
