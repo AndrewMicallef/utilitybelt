@@ -3,6 +3,7 @@
 import h5py
 import datetime
 import numpy as np
+import warnings
 
 class wsfile:
 
@@ -16,8 +17,9 @@ class wsfile:
     def __init__(self, infile):
     
         self.file = h5py.File(infile, 'r')
+        f = self.file
                 
-        if 'VersionString' not in self.f['header']:
+        if 'VersionString' not in self.file['header']:
             #This is likeley the version 0.801 ws file!
             #Double check this against the new specification
             IsContinuous = 'header/IsContinuous'
@@ -26,7 +28,7 @@ class wsfile:
             clock = 'header/ClockAtExperimentStart'
         
         else:
-            version  = float(self.f['header/VersionString'].value[0])
+            version  = float(self.file['header/VersionString'].value[0])
         
             if version >= 0.915:
                 IsContinuous = 'header/AreSweepsContinuous'
@@ -59,22 +61,19 @@ class wsfile:
                 trace_times.append( (self.dstamp + delta) )
         
         self.timestamp = np.array(trace_times)
-    
-        
-    def data(self):
+
+    def data(self, timestamp = False, decode_keys = False, subset = [], digitize = {}):
         """
-        
         returns the h5 data as a dictionary of numpy arrays.
         index by data[channel name] = np.array(trial x samples])
-        
         """
     
         analogDATA = {} #tmp list to hold the analog data
         
-        for group in self.f:
+        for group in self.file:
             if group != u'header':
                 for n in range(len(self.nameslist)):
-                    trace = self.f['%s/analogScans' %group].value[n].astype('float')
+                    trace = self.file['%s/analogScans' %group].value[n].astype('float')
                     trace = (np.array(trace) * (20.0 / 2**16))
             
                     try:  
@@ -85,17 +84,33 @@ class wsfile:
         
         for k in analogDATA:
             analogDATA[k] =  np.array(analogDATA[k])
+
+        if decode_keys or subset or digitize:
+            # strings parsing changed in py3, decode_keys will make 
+            # life more like py2
+            analogDATA = {k.decode():v for k,v in analogDATA.items()}
             
+        if subset:
+            analogDATA = {k:v for k,v in analogDATA.items() if k in subset}
+            skipped_labels = [k for k in analogDATA.keys() if k not in subset]
+            warnings.warn("Skipped Channels: " + (', ').join(skipped_labels))
+        
+        if digitize:
+            analogDATA = {k:(analogDATA[k] > v).astype(bool) for k,v in digitize.items() 
+                                    if k in analogDATA}
+
+        if timestamp:
+            analogDATA['trig_times'] = self.timestamp
+
         return analogDATA
-    
+
     def __enter__(self):
-        return self.file
+        return self
     
     def __exit__(self, ctx_type, ctx_value, ctx_traceback):
         self.file.close()
     
-    '''
-[Context Managers](http://docs.python-guide.org/en/latest/writing/structure/#context-managers)
+    '''[Context Managers](http://docs.python-guide.org/en/latest/writing/structure/#context-managers)
     -------
 
     A context manager is a Python object that provides extra contextual 
@@ -137,7 +152,6 @@ class wsfile:
     __enter__ method is called and whatever __enter__ returns is assigned to 
     f in the as f part of the statement. When the contents of the with block 
     is finished executing, the __exit__ method is then called.
-<!>
     '''
     
     def close(self):
