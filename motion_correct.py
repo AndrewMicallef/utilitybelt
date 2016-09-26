@@ -5,6 +5,7 @@ import numpy as np
 import tifffile
 import matplotlib.pyplot as plt
 from timeit import default_timer as timer
+import tqdm
 
 import sys
 
@@ -72,7 +73,11 @@ def main(filename):
     
     return corrected
     
-def get_translation(stack):
+def get_translation(stack, notebook = False):
+    
+    if notebook:
+        tqdm = tqdm.tqd_notebook
+    
     avg = stack.mean(axis = 0)
     f1 = np.fft.fft2(avg)
     
@@ -80,7 +85,7 @@ def get_translation(stack):
     
     # cloc gives the x and y values to
     # correctly align the image
-    tvec = np.array([corpeak2(frame, (xx,yy), f1) for frame in stack])
+    tvec = np.array([corpeak2(frame, (xx,yy), f1) for tqdm(frame, leave=False, desc='cross corelating') in stack])
 
     return np.array(tvec)
 
