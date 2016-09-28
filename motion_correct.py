@@ -6,6 +6,7 @@ import tifffile
 import matplotlib.pyplot as plt
 from timeit import default_timer as timer
 import tqdm
+from itertools import count
 
 import sys
 
@@ -73,10 +74,12 @@ def main(filename):
     
     return corrected
     
-def get_translation(stack, notebook = False):
+def get_translation(stack, notebook = False, **kwargs):
     
     if notebook:
-        tqdm = tqdm.tqd_notebook
+        pbar = tqdm.tqdm_notebook
+    else:
+        pbar = tqdm.tqdm
     
     avg = stack.mean(axis = 0)
     f1 = np.fft.fft2(avg)
@@ -85,7 +88,7 @@ def get_translation(stack, notebook = False):
     
     # cloc gives the x and y values to
     # correctly align the image
-    tvec = np.array([corpeak2(frame, (xx,yy), f1) for tqdm(frame, leave=False, desc='cross corelating') in stack])
+    tvec = np.array([corpeak2(frame, (xx,yy), f1) for frame in pbar(stack, **kwargs)])
 
     return np.array(tvec)
 
@@ -96,7 +99,7 @@ def correct_motion(stack, tvec):
     stack = [np.roll(frame, h, axis = 1) for frame, (v, h) in zip(stack, tvec)]
 
     # replace the moved edge with NaNs. 
-    for frame, (v,h) in zip(stack, tvec):
+    for i, frame, (v,h) in zip(count(), stack, tvec):
         if v > 0:
             frame[:v,:] = np.nan
         elif v < 0:
@@ -107,6 +110,8 @@ def correct_motion(stack, tvec):
         elif h < 0:
             frame[:, h:] = np.nan
     
+        stack[i] = frame
+        
     return np.array(stack)
     
 def corpeak2(frame, shape, f1 = None):
