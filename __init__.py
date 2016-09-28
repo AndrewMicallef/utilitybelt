@@ -6,3 +6,6 @@ from . import ws
 from . import numerical
 from . import notebook
 from . import motion_correct
+
+#Version = MajorRev.YYMMDD.minor
+__version__ = '0.160927.0'
