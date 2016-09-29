@@ -74,15 +74,18 @@ def main(filename):
     
     return corrected
     
-def get_translation(stack, notebook = False, **kwargs):
+def get_translation(stack, template = None, notebook = False, **kwargs):
     
     if notebook:
         pbar = tqdm.tqdm_notebook
     else:
         pbar = tqdm.tqdm
     
-    avg = stack.mean(axis = 0)
-    f1 = np.fft.fft2(avg)
+    if not template:
+        avg = stack.mean(axis = 0)
+        f1 = np.fft.fft2(avg)
+    else:
+        f1 = np.fft.fft2(template)
     
     xx, yy = avg.shape
     
