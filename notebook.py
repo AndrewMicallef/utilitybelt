@@ -1,4 +1,4 @@
-def HTML_hide_code() {
+def hide_code() :
 
     import IPython.core.display as di
 

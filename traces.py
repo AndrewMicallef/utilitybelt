@@ -1,3 +1,4 @@
+#! python3
 import numpy as np
 import math
 
@@ -138,7 +139,7 @@ def partition_data(data, trials, t_offset = (-1,5), dt = 20000):
         trial_data[k] = np.array(trial_data[k])
 
     for k, v in trial_data.iteritems():
-        print k, len(v)
+        print (k, len(v))
 
     return trial_data
 

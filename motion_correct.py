@@ -81,6 +81,7 @@ def get_translation(stack, template = None, notebook = False, **kwargs):
     else:
         pbar = tqdm.tqdm
     
+
     if template is None:
         avg = stack.mean(axis = 0)
         f1 = np.fft.fft2(avg)
