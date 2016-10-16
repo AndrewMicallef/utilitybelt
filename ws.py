@@ -1,4 +1,4 @@
-#python3
+#!python3
 
 import h5py
 import datetime
@@ -125,7 +125,7 @@ class wsfile:
         contents = f.read()
     ```
     Anyone familiar with this pattern knows that invoking open in this 
-    fashion ensures that f‘s close method will be called at some point. This 
+    fashion ensures that f‘s close method will be called at some point. This
     reduces a developer’s cognitive load and makes the code easier to read.
 
     There are two easy ways to implement this functionality yourself: using a 
