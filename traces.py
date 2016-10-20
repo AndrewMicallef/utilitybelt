@@ -15,6 +15,9 @@ def get_events_ind(trace, threshold, base):
     base_diff = np.diff(base_up.astype(int))
     edges = [(v, i) for i,v in enumerate(base_diff) if v]
 
+    if not edges:
+        return np.array([[]])
+    
     if edges[0][0] == -1: 
         edges.insert(0, (1,0))    
     if edges[-1][0] == 1:
