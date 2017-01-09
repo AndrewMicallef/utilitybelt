@@ -146,14 +146,18 @@ def partition_data(data, trials, t_offset = (-1,5), dt = 20000):
 
     return trial_data
 
-def edges(trace, threshold, type = 'rising'):
+def edges(trace, threshold = None, type = 'rising', digital = False):
+    
     """
     returns a boolean array that is true at the thresholded edges.
     By default returns the rising edge, can take falling edge as well
     """
     
     edge = {'rising':1, 'falling':-1}
-    thresholded = (trace > threshold).astype(int)
+    if not digital:
+        thresholded = (trace > threshold).astype(int)
+    else:
+        thresholded = trace
     
     if type is not 'both':
         return np.diff(thresholded == edge[type])
