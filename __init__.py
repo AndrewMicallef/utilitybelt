@@ -10,3 +10,8 @@ __all__ = [ 'ThorImage',
             'motion_correct',
         ]
 
+from . import ThorImage
+from . import ws
+from . import numerical
+from . import notebook
+from . import motion_correct

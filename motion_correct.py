@@ -75,21 +75,20 @@ def main(filename):
     return corrected
     
 def get_translation(stack, template = None, notebook = False, **kwargs):
-    
+
     if notebook:
         pbar = tqdm.tqdm_notebook
     else:
         pbar = tqdm.tqdm
-    
 
     if template is None:
         avg = stack.mean(axis = 0)
         f1 = np.fft.fft2(avg)
     else:
         f1 = np.fft.fft2(template)
-    
+
     xx, yy = f1.shape
-    
+
     # cloc gives the x and y values to
     # correctly align the image
     tvec = np.array([corpeak2(frame, (xx,yy), f1) for frame in pbar(stack, **kwargs)])
@@ -97,7 +96,7 @@ def get_translation(stack, template = None, notebook = False, **kwargs):
     return np.array(tvec)
 
 def correct_motion(stack, tvec):
-    
+
     #np.roll is analogous to MATLAB circshift()
     stack = [np.roll(frame, v, axis = 0) for frame, (v, h) in zip(stack, tvec)]
     stack = [np.roll(frame, h, axis = 1) for frame, (v, h) in zip(stack, tvec)]
@@ -108,30 +107,30 @@ def correct_motion(stack, tvec):
             frame[:v,:] = np.nan
         elif v < 0:
             frame[v:,:] = np.nan
-    
+
         if h > 0:
             frame[:, :h] = np.nan
         elif h < 0:
             frame[:, h:] = np.nan
-    
+
         stack[i] = frame
-        
+
     return np.array(stack)
-    
+
 def corpeak2(frame, shape, f1 = None):
-    
+
     """
     Returns the vertical and horizontal displacement of frame
     from the best fit of the discrete Fourier transform of avg
     """
-    
+
     xx, yy = shape
-    
+
     # Edge of the movie is not involved in the following calculation
-    
+
     if type(f1) == None:
         f1 = np.fft.fft2(avg)#this is fixed
-    
+
     f2 = np.fft.fft2(frame)
 
     buf = f1 * np.conj(f2)
@@ -151,7 +150,7 @@ def corpeak2(frame, shape, f1 = None):
         h = id2 - yy
     else:
         h = id2
-    
+
     return (v, h)
 
 if __name__ == "__main__":
@@ -159,9 +158,9 @@ if __name__ == "__main__":
         print(usage)
     else:
         filename = sys.argv[1]
-        
+
         #avg = tifffile.imread(sys.argv[2])
-        
+
         path, name = os.path.split(filename)
         name = name.split(".")[0]
         path = os.path.split(path)[0]
